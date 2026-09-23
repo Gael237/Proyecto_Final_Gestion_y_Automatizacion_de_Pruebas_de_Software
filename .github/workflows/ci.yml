@@ -23,8 +23,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Ejecutar pruebas con cobertura
-        run: pytest --cov=main --cov=modelos --cov-report=term-missing --cov-report=xml tests/
-
+        run: python -m pytest --cov=main --cov=modelos --cov-report=term-missing --cov-report=xml tests/
       - name: Subir reporte de cobertura como artefacto
         uses: actions/upload-artifact@v4
         with:
