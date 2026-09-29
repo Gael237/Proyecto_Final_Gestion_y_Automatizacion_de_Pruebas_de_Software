@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte de pruebas de API - La Boletera - API Tests</title>
+<style>
+  :root {
+    --ok: #16a34a; --fail: #dc2626; --bg: #0f172a; --panel: #1e293b; --text: #e2e8f0; --muted: #94a3b8;
+  }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #0f172a; margin: 0; padding: 0; }
+  header { background: var(--bg); color: white; padding: 28px 36px; }
+  header h1 { margin: 0 0 6px 0; font-size: 22px; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+  .summary { display: flex; gap: 16px; padding: 20px 36px; flex-wrap: wrap; }
+  .card { background: white; border-radius: 10px; padding: 16px 22px; box-shadow: 0 1px 3px rgba(0,0,0,.12); min-width: 140px; }
+  .card .num { font-size: 26px; font-weight: 700; }
+  .card .label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+  .card.ok .num { color: var(--ok); }
+  .card.fail .num { color: var(--fail); }
+  main { padding: 0 36px 40px 36px; }
+  .folder { margin-top: 28px; }
+  .folder h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .05em; color: #475569; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px; }
+  .request { background: white; border-radius: 8px; margin: 12px 0; box-shadow: 0 1px 2px rgba(0,0,0,.08); overflow: hidden; }
+  .request-head { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-left: 5px solid var(--ok); }
+  .request-head.fail { border-left-color: var(--fail); }
+  .method { font-weight: 700; font-size: 12px; background: #e2e8f0; padding: 3px 8px; border-radius: 4px; }
+  .status { font-weight: 700; font-size: 13px; }
+  .status.s2 { color: var(--ok); }
+  .status.s4 { color: #d97706; }
+  .time { margin-left: auto; color: #64748b; font-size: 12px; }
+  .checks { padding: 4px 18px 14px 18px; }
+  .check { font-size: 13px; padding: 3px 0; }
+  .check.ok::before { content: '\2713  '; color: var(--ok); font-weight: 700; }
+  .check.fail::before { content: '\2717  '; color: var(--fail); font-weight: 700; }
+  .url { font-family: Consolas, monospace; font-size: 12px; color: #475569; padding: 0 18px 10px 18px; word-break: break-all; }
+  footer { text-align: center; padding: 24px; color: #94a3b8; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>La Boletera - API Tests</h1>
+  <p>Reporte generado el 2026-09-26T04:16:13.797099+00:00 (UTC) &mdash; simulacion de ejecucion Newman via HTTP real contra la API (Node.js/Newman no disponible en el entorno de ejecucion)</p>
+</header>
+<div class="summary">
+  <div class="card"><div class="num">18</div><div class="label">Requests</div></div>
+  <div class="card"><div class="num">33</div><div class="label">Assertions</div></div>
+  <div class="card ok"><div class="num">33</div><div class="label">Passed</div></div>
+  <div class="card fail"><div class="num">0</div><div class="label">Failed</div></div>
+  <div class="card"><div class="num">62.3 ms</div><div class="label">Tiempo total</div></div>
+</div>
+<main>
+<div class="folder"><h2>01 - Autobuses</h2>
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Crear autobus valido -> 200</strong>
+                <span class="status s2">200</span>
+                <span class="time">6.7 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/autobuses/</div>
+              <div class="checks"><div class="check ok">Status code es 200</div><div class="check ok">Respuesta contiene id y placa registrada</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Crear autobus con capacidad 1 (para prueba de limite) -> 200</strong>
+                <span class="status s2">200</span>
+                <span class="time">5.5 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/autobuses/</div>
+              <div class="checks"><div class="check ok">Status code es 200</div><div class="check ok">Guarda autobus_id_capacidad_1</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Placa duplicada -> 400</strong>
+                <span class="status s4">400</span>
+                <span class="time">2.6 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/autobuses/</div>
+              <div class="checks"><div class="check ok">Status code es 400 (placa duplicada)</div><div class="check ok">Mensaje de error correcto</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Capacidad <= 0 (valor limite invalido) -> 422</strong>
+                <span class="status s4">422</span>
+                <span class="time">2.2 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/autobuses/</div>
+              <div class="checks"><div class="check ok">Status code es 422 (validacion Pydantic)</div></div>
+            </div>
+            </div><div class="folder"><h2>02 - Viajes</h2>
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Crear viaje valido -> 200</strong>
+                <span class="status s2">200</span>
+                <span class="time">6.4 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/viajes/</div>
+              <div class="checks"><div class="check ok">Status code es 200</div><div class="check ok">Guarda viaje_id y responde origen/destino correctos</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Crear viaje sobre autobus de capacidad 1 -> 200</strong>
+                <span class="status s2">200</span>
+                <span class="time">5.8 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/viajes/</div>
+              <div class="checks"><div class="check ok">Status code es 200</div><div class="check ok">Guarda viaje_id_capacidad_1</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Autobus inexistente -> 404</strong>
+                <span class="status s4">404</span>
+                <span class="time">2.1 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/viajes/</div>
+              <div class="checks"><div class="check ok">Status code es 404</div><div class="check ok">Mensaje de error correcto</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Fecha de salida en el pasado (valor limite invalido) -> 422</strong>
+                <span class="status s4">422</span>
+                <span class="time">1.8 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/viajes/</div>
+              <div class="checks"><div class="check ok">Status code es 422 (validacion Pydantic)</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">GET</span>
+                <strong>Listar viajes -> 200</strong>
+                <span class="status s2">200</span>
+                <span class="time">2.1 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/viajes/</div>
+              <div class="checks"><div class="check ok">Status code es 200</div><div class="check ok">Responde un arreglo con al menos un viaje</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">GET</span>
+                <strong>Buscar viaje existente (CDMX -> GDL) -> 200</strong>
+                <span class="status s2">200</span>
+                <span class="time">2.8 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/buscar_viaje/?origen=CDMX&destino=GDL</div>
+              <div class="checks"><div class="check ok">Status code es 200</div><div class="check ok">Encuentra al menos un viaje CDMX-GDL</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">GET</span>
+                <strong>Buscar viaje sin resultados -> 200 lista vacia</strong>
+                <span class="status s2">200</span>
+                <span class="time">2.2 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/buscar_viaje/?origen=NoExiste&destino=Tampoco</div>
+              <div class="checks"><div class="check ok">Status code es 200</div><div class="check ok">Responde lista vacia</div></div>
+            </div>
+            </div><div class="folder"><h2>03 - Boletos</h2>
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Venta de boleto valida -> 201</strong>
+                <span class="status s2">201</span>
+                <span class="time">8.0 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/boletos/</div>
+              <div class="checks"><div class="check ok">Status code es 201</div><div class="check ok">Boleto creado con asiento 1</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Asiento duplicado en el mismo viaje -> 409</strong>
+                <span class="status s4">409</span>
+                <span class="time">2.9 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/boletos/</div>
+              <div class="checks"><div class="check ok">Status code es 409 (conflicto)</div><div class="check ok">Mensaje de error correcto</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Asiento excede capacidad del autobus (valor limite) -> 400</strong>
+                <span class="status s4">400</span>
+                <span class="time">2.5 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/boletos/</div>
+              <div class="checks"><div class="check ok">Status code es 400</div><div class="check ok">Mensaje de error correcto</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Asiento <= 0 (valor limite invalido) -> 422</strong>
+                <span class="status s4">422</span>
+                <span class="time">1.7 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/boletos/</div>
+              <div class="checks"><div class="check ok">Status code es 422 (validacion Pydantic)</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">POST</span>
+                <strong>Venta de boleto sobre viaje inexistente -> 404</strong>
+                <span class="status s4">404</span>
+                <span class="time">2.2 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/boletos/</div>
+              <div class="checks"><div class="check ok">Status code es 404</div><div class="check ok">Mensaje de error correcto</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">GET</span>
+                <strong>Boletos de un viaje sin ventas -> 200 lista vacia</strong>
+                <span class="status s2">200</span>
+                <span class="time">2.6 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/viajes/2/boletos</div>
+              <div class="checks"><div class="check ok">Status code es 200</div><div class="check ok">Responde lista vacia para el viaje capacidad 1 (sin ventas exitosas)</div></div>
+            </div>
+            
+            <div class="request">
+              <div class="request-head ">
+                <span class="method">GET</span>
+                <strong>Boletos de viaje inexistente -> 404</strong>
+                <span class="status s4">404</span>
+                <span class="time">2.2 ms</span>
+              </div>
+              <div class="url">http://127.0.0.1:8010/viajes/999999/boletos</div>
+              <div class="checks"><div class="check ok">Status code es 404</div><div class="check ok">Mensaje de error correcto</div></div>
+            </div>
+            </div>
+</main>
+<footer>La Boletera &mdash; Suite de pruebas de API (Postman collection + ejecucion automatizada)</footer>
+</body>
+</html>

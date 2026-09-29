@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+boletera.db
+.pytest_cache/
+
+# Copia local de fuentes de Windows (Arial/Consolas) usada solo para generar
+# el PDF del portafolio; no se redistribuyen (son de Microsoft, no del
+# proyecto) y no son necesarias para correr pruebas ni CI.
+scripts/_fonts/

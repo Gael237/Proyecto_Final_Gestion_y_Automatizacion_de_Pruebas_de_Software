@@ -1,0 +1,28 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Trax GG\Documents\Proyecto_Final_Gestion_y_Automatizacion_de_Pruebas_de_Software\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Trax GG\Documents\Proyecto_Final_Gestion_y_Automatizacion_de_Pruebas_de_Software
+plugins: anyio-4.15.1, cov-7.1.0
+collecting ... collected 13 items
+
+tests/test_concurrencia.py::test_no_sobreventa_bajo_concurrencia PASSED  [  7%]
+tests/test_integracion.py::test_flujo_completo_venta_boleto PASSED       [ 15%]
+tests/test_integracion.py::test_asiento_duplicado_devuelve_409 PASSED    [ 23%]
+tests/test_integracion.py::test_asiento_excede_capacidad PASSED          [ 30%]
+tests/test_integracion.py::test_viaje_inexistente_en_boletos_devuelve_404 PASSED [ 38%]
+tests/test_integracion.py::test_boletos_vendidos_lista_vacia_devuelve_200 PASSED [ 46%]
+tests/test_integracion.py::test_placa_duplicada_devuelve_400 PASSED      [ 53%]
+tests/test_unitarias.py::test_asiento_negativo_invalido PASSED           [ 61%]
+tests/test_unitarias.py::test_asiento_cero_invalido PASSED               [ 69%]
+tests/test_unitarias.py::test_asiento_positivo_valido PASSED             [ 76%]
+tests/test_unitarias.py::test_capacidad_cero_invalida PASSED             [ 84%]
+tests/test_unitarias.py::test_fecha_pasada_invalida PASSED               [ 92%]
+tests/test_unitarias.py::test_fecha_futura_valida PASSED                 [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\Trax GG\Documents\Proyecto_Final_Gestion_y_Automatizacion_de_Pruebas_de_Software\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 13 passed, 1 warning in 0.21s ========================
