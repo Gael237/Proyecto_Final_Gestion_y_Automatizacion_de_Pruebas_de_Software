@@ -1,0 +1,665 @@
+{
+  "info": {
+    "_postman_id": "b8e1a0d2-7c1f-4a2e-9d3e-1f6a3c2b9e10",
+    "name": "La Boletera - API Tests",
+    "description": "Suite de pruebas de API (caja negra) para el backend de venta de boletos de autobús (FastAPI). Cubre el flujo feliz y los casos borde/errores de los endpoints /autobuses/, /viajes/, /boletos/ y /buscar_viaje/. Pensada para ejecutarse con Postman o Newman en orden secuencial (usa variables de colección para encadenar IDs entre requests).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Genera una placa unica UNA sola vez por corrida de la coleccion y la",
+          "// congela en una variable de coleccion, para que el request de 'placa",
+          "// duplicada' reutilice exactamente el mismo valor (si se resolviera",
+          "// {{$randomInt}} en cada request, nunca habria una duplicidad real).",
+          "if (!pm.collectionVariables.get('placa_unica')) {",
+          "    pm.collectionVariables.set('placa_unica', 'ABC-' + Math.floor(Math.random() * 1000000));",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Tiempo de respuesta < 1000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000", "type": "string" },
+    { "key": "placa_unica", "value": "", "type": "string" },
+    { "key": "autobus_id", "value": "", "type": "string" },
+    { "key": "autobus_id_capacidad_1", "value": "", "type": "string" },
+    { "key": "viaje_id", "value": "", "type": "string" },
+    { "key": "viaje_id_capacidad_1", "value": "", "type": "string" },
+    { "key": "viaje_id_sin_boletos", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01 - Autobuses",
+      "item": [
+        {
+          "name": "Crear autobus valido -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Respuesta contiene id y placa registrada', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('id');",
+                  "    pm.expect(body.placa).to.eql(pm.collectionVariables.get('placa_unica'));",
+                  "    pm.expect(body.capacidad).to.eql(20);",
+                  "    pm.collectionVariables.set('autobus_id', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"{{placa_unica}}\",\n  \"chofer\": \"Luis Hernandez\",\n  \"capacidad\": 20\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/autobuses/",
+              "host": ["{{base_url}}"],
+              "path": ["autobuses", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear autobus con capacidad 1 (para prueba de limite) -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Guarda autobus_id_capacidad_1', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('autobus_id_capacidad_1', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"CAP1-{{$randomInt}}\",\n  \"chofer\": \"Ana Torres\",\n  \"capacidad\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/autobuses/",
+              "host": ["{{base_url}}"],
+              "path": ["autobuses", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Placa duplicada -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 400 (placa duplicada)', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Mensaje de error correcto', function () {",
+                  "    pm.expect(pm.response.json().detail).to.eql('Esta placa ya está registrada');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"{{placa_unica}}\",\n  \"chofer\": \"Otro Chofer\",\n  \"capacidad\": 15\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/autobuses/",
+              "host": ["{{base_url}}"],
+              "path": ["autobuses", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Capacidad <= 0 (valor limite invalido) -> 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 422 (validacion Pydantic)', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"ZZZ-{{$randomInt}}\",\n  \"chofer\": \"Chofer Invalido\",\n  \"capacidad\": 0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/autobuses/",
+              "host": ["{{base_url}}"],
+              "path": ["autobuses", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Viajes",
+      "item": [
+        {
+          "name": "Crear viaje valido -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Guarda viaje_id y responde origen/destino correctos', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.origen).to.eql('CDMX');",
+                  "    pm.expect(body.destino).to.eql('GDL');",
+                  "    pm.collectionVariables.set('viaje_id', body.id);",
+                  "    pm.collectionVariables.set('viaje_id_sin_boletos', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origen\": \"CDMX\",\n  \"destino\": \"GDL\",\n  \"fecha_salida\": \"2027-01-01T10:00:00\",\n  \"precio\": 350,\n  \"autobus_id\": {{autobus_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/viajes/",
+              "host": ["{{base_url}}"],
+              "path": ["viajes", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear viaje sobre autobus de capacidad 1 -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Guarda viaje_id_capacidad_1', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('viaje_id_capacidad_1', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origen\": \"CDMX\",\n  \"destino\": \"MTY\",\n  \"fecha_salida\": \"2027-01-01T10:00:00\",\n  \"precio\": 500,\n  \"autobus_id\": {{autobus_id_capacidad_1}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/viajes/",
+              "host": ["{{base_url}}"],
+              "path": ["viajes", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Autobus inexistente -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Mensaje de error correcto', function () {",
+                  "    pm.expect(pm.response.json().detail).to.eql('El autobus no existe');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origen\": \"CDMX\",\n  \"destino\": \"GDL\",\n  \"fecha_salida\": \"2027-01-01T10:00:00\",\n  \"precio\": 350,\n  \"autobus_id\": 999999\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/viajes/",
+              "host": ["{{base_url}}"],
+              "path": ["viajes", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Fecha de salida en el pasado (valor limite invalido) -> 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 422 (fecha en el pasado)', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origen\": \"CDMX\",\n  \"destino\": \"GDL\",\n  \"fecha_salida\": \"2020-01-01T10:00:00\",\n  \"precio\": 350,\n  \"autobus_id\": {{autobus_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/viajes/",
+              "host": ["{{base_url}}"],
+              "path": ["viajes", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar viajes -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Responde un arreglo con al menos un viaje', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an('array');",
+                  "    pm.expect(body.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/viajes/",
+              "host": ["{{base_url}}"],
+              "path": ["viajes", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar viaje existente (CDMX -> GDL) -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Encuentra al menos un viaje CDMX-GDL', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/buscar_viaje/?origen=CDMX&destino=GDL",
+              "host": ["{{base_url}}"],
+              "path": ["buscar_viaje", ""],
+              "query": [
+                { "key": "origen", "value": "CDMX" },
+                { "key": "destino", "value": "GDL" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar viaje sin resultados -> 200 lista vacia",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 (no 404)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Responde lista vacia', function () {",
+                  "    pm.expect(pm.response.json()).to.eql([]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/buscar_viaje/?origen=NoExiste&destino=Tampoco",
+              "host": ["{{base_url}}"],
+              "path": ["buscar_viaje", ""],
+              "query": [
+                { "key": "origen", "value": "NoExiste" },
+                { "key": "destino", "value": "Tampoco" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Boletos",
+      "item": [
+        {
+          "name": "Venta de boleto valida -> 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Boleto creado con asiento 1', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.asiento).to.eql(1);",
+                  "    pm.expect(body.pasajero).to.eql('Ana');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"viaje_id\": {{viaje_id}},\n  \"asiento\": 1,\n  \"pasajero\": \"Ana\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/boletos/",
+              "host": ["{{base_url}}"],
+              "path": ["boletos", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Asiento duplicado en el mismo viaje -> 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 409 (conflicto)', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('Mensaje de error correcto', function () {",
+                  "    pm.expect(pm.response.json().detail).to.eql('Asiento ya ocupado');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"viaje_id\": {{viaje_id}},\n  \"asiento\": 1,\n  \"pasajero\": \"Beto\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/boletos/",
+              "host": ["{{base_url}}"],
+              "path": ["boletos", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Asiento excede capacidad del autobus (valor limite) -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Mensaje de error correcto', function () {",
+                  "    pm.expect(pm.response.json().detail).to.eql('El asiento excede la capacidad del autobús');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"viaje_id\": {{viaje_id_capacidad_1}},\n  \"asiento\": 5,\n  \"pasajero\": \"Carla\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/boletos/",
+              "host": ["{{base_url}}"],
+              "path": ["boletos", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Asiento <= 0 (valor limite invalido) -> 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 422 (validacion Pydantic)', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"viaje_id\": {{viaje_id}},\n  \"asiento\": 0,\n  \"pasajero\": \"Dario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/boletos/",
+              "host": ["{{base_url}}"],
+              "path": ["boletos", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Venta de boleto sobre viaje inexistente -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Mensaje de error correcto', function () {",
+                  "    pm.expect(pm.response.json().detail).to.eql('Viaje no encontrado');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"viaje_id\": 999999,\n  \"asiento\": 1,\n  \"pasajero\": \"Nadie\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/boletos/",
+              "host": ["{{base_url}}"],
+              "path": ["boletos", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Boletos de un viaje sin ventas -> 200 lista vacia",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 (no 404)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Responde lista vacia para el viaje capacidad 1 (sin ventas exitosas)', function () {",
+                  "    pm.expect(pm.response.json()).to.eql([]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/viajes/{{viaje_id_capacidad_1}}/boletos",
+              "host": ["{{base_url}}"],
+              "path": ["viajes", "{{viaje_id_capacidad_1}}", "boletos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Boletos de viaje inexistente -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Mensaje de error correcto', function () {",
+                  "    pm.expect(pm.response.json().detail).to.eql('El viaje no existe');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/viajes/999999/boletos",
+              "host": ["{{base_url}}"],
+              "path": ["viajes", "999999", "boletos"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

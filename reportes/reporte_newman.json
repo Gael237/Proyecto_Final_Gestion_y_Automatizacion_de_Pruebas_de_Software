@@ -1,0 +1,453 @@
+{
+  "generado": "2026-09-26T04:16:13.797099+00:00",
+  "coleccion": "La Boletera - API Tests",
+  "total_requests": 18,
+  "total_assertions": 33,
+  "assertions_ok": 33,
+  "assertions_fail": 0,
+  "tiempo_total_ms": 62.3,
+  "resultados": [
+    {
+      "carpeta": "01 - Autobuses",
+      "nombre": "Crear autobus valido -> 200",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/autobuses/",
+      "status": 200,
+      "tiempo_ms": 6.7,
+      "checks": [
+        {
+          "nombre": "Status code es 200",
+          "ok": true
+        },
+        {
+          "nombre": "Respuesta contiene id y placa registrada",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "id": 1,
+        "chofer": "Luis Hernandez",
+        "capacidad": 20,
+        "placa": "ABC-910715"
+      }
+    },
+    {
+      "carpeta": "01 - Autobuses",
+      "nombre": "Crear autobus con capacidad 1 (para prueba de limite) -> 200",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/autobuses/",
+      "status": 200,
+      "tiempo_ms": 5.5,
+      "checks": [
+        {
+          "nombre": "Status code es 200",
+          "ok": true
+        },
+        {
+          "nombre": "Guarda autobus_id_capacidad_1",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "id": 2,
+        "chofer": "Ana Torres",
+        "capacidad": 1,
+        "placa": "CAP1-415638"
+      }
+    },
+    {
+      "carpeta": "01 - Autobuses",
+      "nombre": "Placa duplicada -> 400",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/autobuses/",
+      "status": 400,
+      "tiempo_ms": 2.6,
+      "checks": [
+        {
+          "nombre": "Status code es 400 (placa duplicada)",
+          "ok": true
+        },
+        {
+          "nombre": "Mensaje de error correcto",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": "Esta placa ya está registrada"
+      }
+    },
+    {
+      "carpeta": "01 - Autobuses",
+      "nombre": "Capacidad <= 0 (valor limite invalido) -> 422",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/autobuses/",
+      "status": 422,
+      "tiempo_ms": 2.2,
+      "checks": [
+        {
+          "nombre": "Status code es 422 (validacion Pydantic)",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": [
+          {
+            "type": "greater_than",
+            "loc": [
+              "body",
+              "capacidad"
+            ],
+            "msg": "Input should be greater than 0",
+            "input": 0,
+            "ctx": {
+              "gt": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "carpeta": "02 - Viajes",
+      "nombre": "Crear viaje valido -> 200",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/viajes/",
+      "status": 200,
+      "tiempo_ms": 6.4,
+      "checks": [
+        {
+          "nombre": "Status code es 200",
+          "ok": true
+        },
+        {
+          "nombre": "Guarda viaje_id y responde origen/destino correctos",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "id": 1,
+        "fecha_salida": "2027-01-01T10:00:00",
+        "autobus_id": 1,
+        "destino": "GDL",
+        "origen": "CDMX",
+        "precio": 350.0
+      }
+    },
+    {
+      "carpeta": "02 - Viajes",
+      "nombre": "Crear viaje sobre autobus de capacidad 1 -> 200",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/viajes/",
+      "status": 200,
+      "tiempo_ms": 5.8,
+      "checks": [
+        {
+          "nombre": "Status code es 200",
+          "ok": true
+        },
+        {
+          "nombre": "Guarda viaje_id_capacidad_1",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "id": 2,
+        "fecha_salida": "2027-01-01T10:00:00",
+        "autobus_id": 2,
+        "destino": "MTY",
+        "origen": "CDMX",
+        "precio": 500.0
+      }
+    },
+    {
+      "carpeta": "02 - Viajes",
+      "nombre": "Autobus inexistente -> 404",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/viajes/",
+      "status": 404,
+      "tiempo_ms": 2.1,
+      "checks": [
+        {
+          "nombre": "Status code es 404",
+          "ok": true
+        },
+        {
+          "nombre": "Mensaje de error correcto",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": "El autobus no existe"
+      }
+    },
+    {
+      "carpeta": "02 - Viajes",
+      "nombre": "Fecha de salida en el pasado (valor limite invalido) -> 422",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/viajes/",
+      "status": 422,
+      "tiempo_ms": 1.8,
+      "checks": [
+        {
+          "nombre": "Status code es 422 (validacion Pydantic)",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": [
+          {
+            "type": "value_error",
+            "loc": [
+              "body",
+              "fecha_salida"
+            ],
+            "msg": "Value error, fecha_salida no puede ser en el pasado",
+            "input": "2020-01-01T10:00:00",
+            "ctx": {
+              "error": {}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "carpeta": "02 - Viajes",
+      "nombre": "Listar viajes -> 200",
+      "metodo": "GET",
+      "url": "http://127.0.0.1:8010/viajes/",
+      "status": 200,
+      "tiempo_ms": 2.1,
+      "checks": [
+        {
+          "nombre": "Status code es 200",
+          "ok": true
+        },
+        {
+          "nombre": "Responde un arreglo con al menos un viaje",
+          "ok": true
+        }
+      ],
+      "response_body": [
+        {
+          "id": 1,
+          "fecha_salida": "2027-01-01T10:00:00",
+          "autobus_id": 1,
+          "destino": "GDL",
+          "origen": "CDMX",
+          "precio": 350.0
+        },
+        {
+          "id": 2,
+          "fecha_salida": "2027-01-01T10:00:00",
+          "autobus_id": 2,
+          "destino": "MTY",
+          "origen": "CDMX",
+          "precio": 500.0
+        }
+      ]
+    },
+    {
+      "carpeta": "02 - Viajes",
+      "nombre": "Buscar viaje existente (CDMX -> GDL) -> 200",
+      "metodo": "GET",
+      "url": "http://127.0.0.1:8010/buscar_viaje/?origen=CDMX&destino=GDL",
+      "status": 200,
+      "tiempo_ms": 2.8,
+      "checks": [
+        {
+          "nombre": "Status code es 200",
+          "ok": true
+        },
+        {
+          "nombre": "Encuentra al menos un viaje CDMX-GDL",
+          "ok": true
+        }
+      ],
+      "response_body": [
+        {
+          "id": 1,
+          "fecha_salida": "2027-01-01T10:00:00",
+          "autobus_id": 1,
+          "destino": "GDL",
+          "origen": "CDMX",
+          "precio": 350.0
+        }
+      ]
+    },
+    {
+      "carpeta": "02 - Viajes",
+      "nombre": "Buscar viaje sin resultados -> 200 lista vacia",
+      "metodo": "GET",
+      "url": "http://127.0.0.1:8010/buscar_viaje/?origen=NoExiste&destino=Tampoco",
+      "status": 200,
+      "tiempo_ms": 2.2,
+      "checks": [
+        {
+          "nombre": "Status code es 200",
+          "ok": true
+        },
+        {
+          "nombre": "Responde lista vacia",
+          "ok": true
+        }
+      ],
+      "response_body": []
+    },
+    {
+      "carpeta": "03 - Boletos",
+      "nombre": "Venta de boleto valida -> 201",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/boletos/",
+      "status": 201,
+      "tiempo_ms": 8.0,
+      "checks": [
+        {
+          "nombre": "Status code es 201",
+          "ok": true
+        },
+        {
+          "nombre": "Boleto creado con asiento 1",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "pasajero": "Ana",
+        "asiento": 1,
+        "id": 1,
+        "viaje_id": 1
+      }
+    },
+    {
+      "carpeta": "03 - Boletos",
+      "nombre": "Asiento duplicado en el mismo viaje -> 409",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/boletos/",
+      "status": 409,
+      "tiempo_ms": 2.9,
+      "checks": [
+        {
+          "nombre": "Status code es 409 (conflicto)",
+          "ok": true
+        },
+        {
+          "nombre": "Mensaje de error correcto",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": "Asiento ya ocupado"
+      }
+    },
+    {
+      "carpeta": "03 - Boletos",
+      "nombre": "Asiento excede capacidad del autobus (valor limite) -> 400",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/boletos/",
+      "status": 400,
+      "tiempo_ms": 2.5,
+      "checks": [
+        {
+          "nombre": "Status code es 400",
+          "ok": true
+        },
+        {
+          "nombre": "Mensaje de error correcto",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": "El asiento excede la capacidad del autobús"
+      }
+    },
+    {
+      "carpeta": "03 - Boletos",
+      "nombre": "Asiento <= 0 (valor limite invalido) -> 422",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/boletos/",
+      "status": 422,
+      "tiempo_ms": 1.7,
+      "checks": [
+        {
+          "nombre": "Status code es 422 (validacion Pydantic)",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": [
+          {
+            "type": "greater_than",
+            "loc": [
+              "body",
+              "asiento"
+            ],
+            "msg": "Input should be greater than 0",
+            "input": 0,
+            "ctx": {
+              "gt": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "carpeta": "03 - Boletos",
+      "nombre": "Venta de boleto sobre viaje inexistente -> 404",
+      "metodo": "POST",
+      "url": "http://127.0.0.1:8010/boletos/",
+      "status": 404,
+      "tiempo_ms": 2.2,
+      "checks": [
+        {
+          "nombre": "Status code es 404",
+          "ok": true
+        },
+        {
+          "nombre": "Mensaje de error correcto",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": "Viaje no encontrado"
+      }
+    },
+    {
+      "carpeta": "03 - Boletos",
+      "nombre": "Boletos de un viaje sin ventas -> 200 lista vacia",
+      "metodo": "GET",
+      "url": "http://127.0.0.1:8010/viajes/2/boletos",
+      "status": 200,
+      "tiempo_ms": 2.6,
+      "checks": [
+        {
+          "nombre": "Status code es 200",
+          "ok": true
+        },
+        {
+          "nombre": "Responde lista vacia para el viaje capacidad 1 (sin ventas exitosas)",
+          "ok": true
+        }
+      ],
+      "response_body": []
+    },
+    {
+      "carpeta": "03 - Boletos",
+      "nombre": "Boletos de viaje inexistente -> 404",
+      "metodo": "GET",
+      "url": "http://127.0.0.1:8010/viajes/999999/boletos",
+      "status": 404,
+      "tiempo_ms": 2.2,
+      "checks": [
+        {
+          "nombre": "Status code es 404",
+          "ok": true
+        },
+        {
+          "nombre": "Mensaje de error correcto",
+          "ok": true
+        }
+      ],
+      "response_body": {
+        "detail": "El viaje no existe"
+      }
+    }
+  ]
+}
